@@ -11,35 +11,39 @@ prep_bloom.cpp
 - calculating x,y for the last of the batch entry (used as the next startPoint)
 - bloom add only x coordinate uint64_t bits64[3] part
 
-Concept code. Can be made faster with different variations.
-
 key_search.cpp
 - batch addition/subtraction
 - batch inversion
-- center of the partition as the starting point
+- center of the partition and start/end of partition as the starting points
 - calculating just x coordinate for the batch - 1
 - calculating x,y for the last of the batch entry (used as the next startPoint)
 - bloom add only x coordinate uint64_t bits64[3] part
 
-alexander@alexander-home:~/Documents/Key_Search$ ./prep_bloom
-[20:54:44] Range Start: 60 bits
-[20:54:44] Range End  : 61 bits
-[20:54:44] Block Width: 2^30
-[20:54:44] Search Pub : 02bfc4c349b81e87f2f5597252877bf074cfcec7372ff7f55264a916ae5f7b82f1
-[20:54:44] Stride_sum written to file
-[20:54:44] Creating bloomfilter image
-[21:26:36] Writing image to bloom.bf
-[21:26:55] Elapsed time: (0)hours (32)minutes (11)seconds
+Kali Linux XFCE
+┌──(alexander㉿DESKTOP-ZMYIN9A)-[~/Documents/Key_Search]
+└─$ ./prep_bloom
+[21:38:20] Range Start: 61 bits
+[21:38:20] Range End  : 62 bits
+[21:38:20] Block Width: 2^31
+[21:38:20] Search Pub : 02034eb1de50492bf0c26998f8dacfb4a8580601de3f2a9b4ced52bcc79a32ebfc
+[21:38:20] Stride_sum written to file
+[21:38:20] Creating bloomfilter image
+[21:59:27] Writing image to bloom.bf
+[22:00:45] Elapsed time: (0)hours (22)minutes (25)seconds
+                                                                                                            
+┌──(alexander㉿DESKTOP-ZMYIN9A))-[~/Documents/Key_Search]
+└─$ ./key_search
+[22:01:03] S_table generated
+[22:01:03] Range Start: 61 bits
+[22:01:03] Range End  : 62 bits
+[22:01:03] Block Width: 2^31
+[22:01:03] Search Pub : 02034eb1de50492bf0c26998f8dacfb4a8580601de3f2a9b4ced52bcc79a32ebfc
+[22:01:03] Loading Bloomfilter image
+[22:01:09] Key Search in progress...
+[22:01:34] BloomFilter Hit (C+) -> False Positive
+[22:01:39] BloomFilter Hit (S+) -> False Positive
+[22:01:58] BloomFilter Hit (C-) -> Success
+[22:01:58] Private key: 4415445441513132075
+[22:01:58] Elapsed time: (0)hours (0)minutes (49)seconds
 
-alexander@alexander-home:~/Documents/Key_Search$ ./key_search
-[21:39:23] S_table generated
-[21:39:23] Range Start: 60 bits
-[21:39:23] Range End  : 61 bits
-[21:39:23] Block Width: 2^30
-[21:39:23] Search Pub : 02bfc4c349b81e87f2f5597252877bf074cfcec7372ff7f55264a916ae5f7b82f1
-[21:39:23] Loading Bloomfilter image
-[21:39:28] Key Search in progress...
-[21:40:04] BloomFilter Hit (+) -> Success
-[21:40:04] Private key: 1754855292826764224
-[21:40:04] Elapsed time: (0)hours (0)minutes (36)seconds
 </pre>
