@@ -17,7 +17,7 @@ key_search.cpp
 - center of the partition and start/end of partition as the starting points
 - calculating just x coordinate for the batch - 1
 - calculating x,y for the last of the batch entry (used as the next startPoint)
-- bloom add only x coordinate uint64_t bits64[3] part
+- bloom check only x coordinate uint64_t bits64[3] part
 
 Kali Linux XFCE
 ┌──(alexander㉿DESKTOP-ZMYIN9A)-[~/Documents/Key_Search]
