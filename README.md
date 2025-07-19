@@ -22,26 +22,27 @@ key_search.cpp
 Kali Linux XFCE
 ┌──(alexander㉿DESKTOP-ZMYIN9A)-[~/Documents/Key_Search]
 └─$ ./prep_bloom
-[22:17:40] Range Start: 62 bits
-[22:17:40] Range End  : 63 bits
-[22:17:40] Block Width: 2^32
-[22:17:40] Search Pub : 02fa8ea2106e6ffb35c3aca7a01d17dd6ef5f2ed82a9386419f59d32b4ea81cd8c
-[22:17:40] Stride_sum written to file
-[22:17:40] Creating bloomfilter image
-[23:21:05] Writing image to bloom.bf
-[23:24:57] Elapsed time: (1)hours (7)minutes (19)seconds
+[23:33:10] Range Start: 63 bits
+[23:33:10] Range End  : 64 bits
+[23:33:10] Block Width: 2^32
+[23:33:10] Search Pub : 02072a2a4dcdcd70f98b22900a08807258f2c4397044d493016bb86cff2fc35d57
+[23:33:10] Stride_sum written to file
+[23:33:10] Creating bloomfilter image
+[00:20:35] Writing image to bloom.bf
+[00:24:00] Elapsed time: (0)hours (50)minutes (51)seconds
                                                                                                             
 ┌──(alexander㉿DESKTOP-ZMYIN9A))-[~/Documents/Key_Search]
 └─$ ./key_search
-[23:25:46] S_table generated
-[23:25:46] Range Start: 62 bits
-[23:25:46] Range End  : 63 bits
-[23:25:46] Block Width: 2^32
-[23:25:46] Search Pub : 02fa8ea2106e6ffb35c3aca7a01d17dd6ef5f2ed82a9386419f59d32b4ea81cd8c
-[23:25:46] Loading Bloomfilter image
-[23:27:55] Key Search in progress...
-[23:28:38] BloomFilter Hit (S-) -> Success
-[23:28:38] Private key: 7759623732764795293
-[23:28:38] Elapsed time: (0)hours (0)minutes (43)seconds
-
+[00:30:25] S_table generated
+[00:30:25] Range Start: 63 bits
+[00:30:25] Range End  : 64 bits
+[00:30:25] Block Width: 2^32
+[00:30:25] Search Pub : 02072a2a4dcdcd70f98b22900a08807258f2c4397044d493016bb86cff2fc35d57
+[00:30:25] Loading Bloomfilter image
+[00:32:34] Key Search in progress...
+[00:33:20] BloomFilter Hit (C-) -> False Positive
+[00:34:07] BloomFilter Hit (S+) -> False Positive
+[00:34:16] BloomFilter Hit (S-) -> Success
+[00:34:16] Private key: 9743243711422511270
+[00:34:16] Elapsed time: (0)hours (1)minutes (42)seconds
 </pre>
