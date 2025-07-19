@@ -7,17 +7,17 @@ You can find the right package manager commands on the Internet for your Linux D
 prep_bloom.cpp
 - batch addition
 - batch inversion
-- calculating just x coordinate for the batch - 1
+- calculating x coordinate for the batch - 1
 - calculating x,y for the last of the batch entry (used as the next startPoint)
-- bloom add only x coordinate uint64_t bits64[3] part
+- bloom add x coordinate uint64_t bits64[3] part
 
 key_search.cpp
 - batch addition/subtraction
 - batch inversion
 - center of the partition and start/end of partition as the starting points
-- calculating just x coordinate for the batch - 1
+- calculating x coordinate for the batch - 1
 - calculating x,y for the last of the batch entry (used as the next startPoint)
-- bloom check only x coordinate uint64_t bits64[3] part
+- bloom check x coordinate uint64_t bits64[3] part
 
 Kali Linux XFCE
 ┌──(alexander㉿DESKTOP-ZMYIN9A)-[~/Documents/Key_Search]
