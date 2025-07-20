@@ -14,7 +14,7 @@ prep_bloom.cpp
 key_search.cpp
 - batch addition/subtraction
 - batch inversion
-- center of the partition and start/end of partition as the starting points
+- center of the partition and start/end of partition as the starting points(cross meet)
 - calculating x coordinate for the batch - 1
 - calculating x,y for the last of the batch entry (used as the next startPoint)
 - bloom check x coordinate uint64_t bits64[3] part
