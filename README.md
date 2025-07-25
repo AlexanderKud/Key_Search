@@ -19,8 +19,8 @@ key_search.cpp
 - calculating x,y for the last of the batch entry (used as the next startPoint)
 - bloom check x coordinate uint64_t bits64[3] part
 
-Kali Linux XFCE
-┌──(alexander㉿DESKTOP-ZMYIN9A)-[~/Documents/Key_Search]
+Kali Linux XFCE(X11)
+┌──(alexander㉿kali)-[~/Documents/Key_Search]
 └─$ ./prep_bloom
 [07:30:33] Range Start: 65 bits
 [07:30:33] Range End  : 66 bits
@@ -31,7 +31,7 @@ Kali Linux XFCE
 [08:17:13] Writing image to bloom.bf
 [08:20:44] Elapsed time: (0)hours (50)minutes (11)seconds
                                                                                                             
-┌──(alexander㉿DESKTOP-ZMYIN9A))-[~/Documents/Key_Search]
+┌──(alexander㉿kali)-[~/Documents/Key_Search]
 └─$ ./key_search
 08:20:49] S_table generated
 [08:20:50] Range Start: 65 bits
