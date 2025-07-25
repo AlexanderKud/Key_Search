@@ -33,7 +33,7 @@ Kali Linux Xfce(X11)
                                                                                                             
 ┌──(alexander㉿kali)-[~/Documents/Key_Search]
 └─$ ./key_search
-08:20:49] S_table generated
+[08:20:49] S_table generated
 [08:20:50] Range Start: 65 bits
 [08:20:50] Range End  : 66 bits
 [08:20:50] Block Width: 2^32
