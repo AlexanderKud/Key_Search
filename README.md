@@ -19,7 +19,7 @@ key_search.cpp
 - calculating x,y for the last of the batch entry (used as the next startPoint)
 - bloom check x coordinate uint64_t bits64[3] part
 
-Kali Linux XFCE(X11)
+Kali Linux Xfce(X11)
 ┌──(alexander㉿kali)-[~/Documents/Key_Search]
 └─$ ./prep_bloom
 [07:30:33] Range Start: 65 bits
