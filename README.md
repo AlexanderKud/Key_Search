@@ -5,7 +5,7 @@ Requires C/C++ OpenMP Library to be installed. <a href="https://www.openmp.org">
 You can find the right package manager commands on the Internet for your Linux Distro.
 
 check_puzzle_distance.py
-- complete calculations to see real numbers to solve the puzzle with chosen settings
+- complete calculations to see the real numbers to solve the puzzle with chosen settings
 
 prep_bloom.cpp
 - batch addition
