@@ -18,9 +18,9 @@ for k in range(256):
     S_table.append(pk) 
     pk *= 2
 
-puzzle = 1103873984953507439627945351144005829577
-start_bits = 129
-end_bits   = 130  
+puzzle = 970436974005023690481
+start_bits = 69
+end_bits   = 70  
 range_start = S_table[start_bits]
 range_end   = S_table[end_bits]
 stride_bits = 32
@@ -37,18 +37,20 @@ for i in range(num_threads):
 print(f'Threads     : {num_threads}')
 print(f'Range start : [{start_bits} bits] {range_start}')
 print(f'Range end   : [{end_bits} bits] {range_end}')
+print(f'Stride size : [{stride_bits} bits] {stride}')
 print(f'Block width : {block_width}')
 get_range(block_width)
-print(f'Stride size : 2^{stride_bits}')
 start_num = 0
 end_num   = 0
+index_blk = 0
 for idx, num in enumerate(range_nums):
     if puzzle > num:
+        index_blk = idx
         start_num = range_nums[idx]
         end_num   = range_nums[idx + 1]
 print()
 print(f'Puzzle -> {puzzle}')
-print(f'Found in block [{start_num} - {end_num}]')
+print(f'Found in block #{index_blk + 1} of {num_threads} [{start_num} - {end_num}]')
 dist_s = puzzle - start_num
 dist_e = end_num - puzzle
 mid = start_num + (block_width // 2)
@@ -85,4 +87,8 @@ elif min_val == dist_e:
     print(f'Distance from block end is the shortest')
 else:
     print(f'Distance from middle of the block is the shortest')
-    
+
+'''
+[06:01:34] BloomFilter Hit (C+) -> Success
+[06:01:34] Private key: 970436974005023690481
+'''
