@@ -19,12 +19,12 @@ for k in range(256):
     pk *= 2
 
 batch_size = 1024
-puzzle = 199976667976342049
-start_bits = 57
-end_bits   = 58  
+puzzle = 38726004909084954807
+start_bits = 65
+end_bits   = 66  
 range_start = S_table[start_bits]
 range_end   = S_table[end_bits]
-stride_bits = 28
+stride_bits = 32
 stride      = S_table[stride_bits] # 2^stride_bits
 
 block_width = range_start // num_threads
@@ -92,8 +92,3 @@ elif min_val == dist_e:
     print(f'Distance from block end is the shortest')
 else:
     print(f'Distance from middle of the block is the shortest')
-
-'''
-[06:01:34] BloomFilter Hit (C+) -> Success
-[06:01:34] Private key: 970436974005023690481
-'''
