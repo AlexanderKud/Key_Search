@@ -92,8 +92,3 @@ elif min_val == dist_e:
     print(f'Distance from block end is the shortest')
 else:
     print(f'Distance from middle of the block is the shortest')
-
-'''
-[06:01:34] BloomFilter Hit (C+) -> Success
-[06:01:34] Private key: 970436974005023690481
-'''
