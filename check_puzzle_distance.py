@@ -18,13 +18,14 @@ for k in range(256):
     S_table.append(pk) 
     pk *= 2
 
-puzzle = 970436974005023690481
-start_bits = 69
-end_bits   = 70  
+batch_size = 1024
+puzzle = 199976667976342049
+start_bits = 57
+end_bits   = 58  
 range_start = S_table[start_bits]
 range_end   = S_table[end_bits]
-stride_bits = 32
-stride      = S_table[stride_bits] # 2^32
+stride_bits = 28
+stride      = S_table[stride_bits] # 2^stride_bits
 
 block_width = range_start // num_threads
 range_nums = []
@@ -63,10 +64,12 @@ else:
 print(f'Distance from block start : {dist_s}')
 get_range(dist_s)
 print(f'Takes : {dist_s // stride} strides of size 2^{stride_bits} to solve')
+print(f'Takes : {(dist_s // stride) // batch_size} batches of size {batch_size} to solve')
 print()
 print(f'Distance from block end   : {dist_e}')
 get_range(dist_e)
 print(f'Takes : {dist_e // stride} strides of size 2^{stride_bits} to solve')
+print(f'Takes : {(dist_e // stride) // batch_size} batches of size {batch_size} to solve')
 print()
 dist_m = 0
 if puzzle < mid:
@@ -74,11 +77,13 @@ if puzzle < mid:
     print(f'Distance from middle  [-] : {dist_m}')
     get_range(dist_m)
     print(f'Takes : {dist_m // stride} strides of size 2^{stride_bits} to solve')
+    print(f'Takes : {(dist_m // stride) // batch_size} batches of size {batch_size} to solve')
 else:
     dist_m = puzzle - mid
     print(f'Distance from middle  [+] : {dist_m}')
     get_range(dist_m)
     print(f'Takes : {dist_m // stride} strides of size 2^{stride_bits} to solve')
+    print(f'Takes : {(dist_m // stride) // batch_size} batches of size {batch_size} to solve')
 print()
 min_val = min(dist_s, dist_e, dist_m)
 if min_val == dist_s:
