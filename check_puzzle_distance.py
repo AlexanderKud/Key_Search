@@ -19,9 +19,9 @@ for k in range(256):
     pk *= 2
 
 batch_size = 1024
-puzzle = 38726004909084954807
-start_bits = 65
-end_bits   = 66  
+puzzle = 970147978437853156871562291874798693215743
+start_bits = 139
+end_bits   = 140  
 range_start = S_table[start_bits]
 range_end   = S_table[end_bits]
 stride_bits = 32
