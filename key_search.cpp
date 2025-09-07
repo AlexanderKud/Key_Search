@@ -31,7 +31,7 @@ auto main() -> int {
 
     uint64_t range_start, range_end, block_width; // block_width = number of elements in the bloomfilter and a stride size to walk the range
     string temp, search_pub;
-    ifstream inFile("settings.txt"); // load setiings from file
+    ifstream inFile("settings.txt"); // load settings from file
     getline(inFile, temp); range_start = std::stoull(temp);
     getline(inFile, temp); range_end = std::stoull(temp);
     getline(inFile, temp); block_width = std::stoull(temp);
