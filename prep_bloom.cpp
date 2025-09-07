@@ -14,7 +14,7 @@ using namespace std;
 using filter = boost::bloom::filter<boost::uint64_t, 32>; // bloomfilter settings
 
 const double error = 0.0000000001; // errror rate for bloomfilter
-const int n_cores = 2; //actual number of processing cores equal to some power of two value (2,4,8,16,32,64,...)
+const int n_cores = 2; //number of processing cores
 const int POINTS_BATCH_SIZE = 1024; // Batch addition with batch inversion using IntGroup class
 
 auto main() -> int {
