@@ -70,8 +70,8 @@ auto main() -> int {
     
     auto bloom_create = [&]() {
         
-        string bloomfile = "bloom.bf"; //       bloomfilter for even case (1164->1288)   [1288 + block_width] will hit
-        Point P = secp256k1->SubtractPoints(target_point, secp256k1->G); //(1165.5->1289) [1289 + block_width] will not hit
+        string bloomfile = "bloom.bf";
+        Point P = secp256k1->SubtractPoints(target_point, secp256k1->G);
         Point starting_points[n_cores];
         for (int i = 0; i < n_cores; i++) { // calculating the starting points 
             starting_points[i] = P;
@@ -84,7 +84,7 @@ auto main() -> int {
             
             IntGroup modGroup(POINTS_BATCH_SIZE); // group of deltaX (x1 - x2) set for batch inversion
             Int deltaX[POINTS_BATCH_SIZE]; // here we store (x1 - x2) batch that will be inverted for later multiplication
-            modGroup.Set(deltaX); // assign array deltaX to modGroup for batch inversion (JLP way one time for all)
+            modGroup.Set(deltaX); // assign array deltaX to modGroup for batch inversion (JLP one time Set)
             Int pointBatchX[POINTS_BATCH_SIZE]; // X coordinates of the batch
             Int pointBatchY[POINTS_BATCH_SIZE]; // Y coordinates of the batch
             Int deltaY, slope; // values to store the results of points addition formula
@@ -111,7 +111,7 @@ auto main() -> int {
 
                 }
                 
-                deltaY.ModSub(&startPoint.y, &addPoints[i].y); // calculating X,Y coordinates for the last of the batch entry (used as the next startPoint)
+                deltaY.ModSub(&startPoint.y, &addPoints[i].y); // calculating X,Y coordinates for the last of the batch entry (used also as the next startPoint)
                 slope.ModMulK1(&deltaY, &deltaX[i]);
 
                 pointBatchX[i].ModSquareK1(&slope);
