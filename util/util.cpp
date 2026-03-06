@@ -41,7 +41,7 @@ void print_time() {
     std::cout << "[" << output << "] ";
 }
 
-vector<uint64_t> break_down_to_pow10(uint64_t num) {
+vector<uint64_t> break_down_into_pow10(uint64_t num) {
     vector<uint64_t> nums;
     string stri = to_string(num);
     int num_len = stri.length() - 2;
