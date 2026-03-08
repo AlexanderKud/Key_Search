@@ -12,7 +12,7 @@
 using namespace std;
 using filter = boost::bloom::filter<boost::uint64_t, 32>;
 
-const int cpuCores = std::thread::hardware_concurrency() * 4; // number of processing cores
+const int cpuCores = std::thread::hardware_concurrency(); // number of processing cores
 const int POINTS_BATCH_SIZE = 1024; // Batch addition / Batch inversion (IntGroup.h class)
 
 auto main() -> int {
