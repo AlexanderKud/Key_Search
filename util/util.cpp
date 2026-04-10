@@ -1,9 +1,11 @@
+#include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+
+#include <iostream>
 #include <ctime>
 #include <chrono>
 #include <string>
-#include <iostream>
-#include <cmath>
 
 #include "util.h"
 
@@ -58,4 +60,40 @@ void print_elapsed_time(std::chrono::time_point<std::chrono::system_clock> start
     duration -= minutes;
     auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
     print_time(); cout << "Elapsed time: (" << hours.count() << ")hours (" << minutes.count() << ")minutes (" << seconds.count() << ")seconds\n";
+}
+
+void set_bit(unsigned char *bloom, size_t pos) {
+    bloom[pos >> 3] |= (1 << (pos & 7));
+}
+
+int check_bit(unsigned char *bloom, size_t pos) {
+    return (bloom[pos >> 3] >> (pos & 7)) & 1;
+}
+
+void save_bloom_filter(const char *filename, unsigned char *bloom, size_t size) {
+    FILE *fp = fopen(filename, "wb");
+    fwrite(bloom, 1, size, fp);
+    fclose(fp);
+}
+
+void load_bloom_filter(const char *filename, unsigned char *bloom, size_t size) {
+    FILE *fp = fopen(filename, "rb");
+    fread(bloom, 1, size, fp);
+    fclose(fp);
+}
+
+std::string bytesToSize(double bytes, int precision) {
+    std::string sizes[] = {"Bytes", "KB", "MB", "GB", "TB"};
+    int posttxt = 0;
+    
+    if (bytes == 0) return "n/a";
+    
+    while (bytes >= 1024 && posttxt < 4) {
+        posttxt++;
+        bytes = bytes / 1024;
+    }
+    
+    // Simple version without rounding control
+    return std::to_string(bytes).substr(0, std::to_string(bytes).find(".") + precision + 1) 
+           + " " + sizes[posttxt];
 }

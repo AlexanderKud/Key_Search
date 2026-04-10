@@ -17,9 +17,11 @@ const int POINTS_BATCH_SIZE = 1024; // Batch addition / Batch inversion (IntGrou
 
 auto main() -> int {
 
-    Secp256K1* secp256k1 = new Secp256K1(); secp256k1->Init(); // initialize secp256k1 context
+    Secp256K1* secp256k1 = new Secp256K1(); 
+    secp256k1->Init(); // initialize secp256k1 context
 
-    Int gm; gm.SetBase16("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140");
+    Int gm; 
+    gm.SetBase16("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140");
     Point Gm = secp256k1->ScalarMultiplication(&gm);
     
     Int pk; pk.SetInt32(1); // generating power of two values (2^0..2^256) table
@@ -62,60 +64,64 @@ auto main() -> int {
     boost::span<unsigned char> s1 = bf.array();
     in1.read((char*) s1.data(), s1.size()); // load array
     in1.close();
-    
+
     auto pow10_nums = break_down_into_pow10(stride_bits); // decomposing the 2^block_width to the power of ten values
-    vector<Point> pow10_points;                                           // to get the offset from the target point
+    size_t arr_size = pow10_nums.size();                  // to get the offset from the target point based on the bloomfilter hits fast
+    Point pow10_points_Pos[arr_size];
+    Point pow10_points_Neg[arr_size];                           
     Int pow_key;
+    Point Pm;
+    int arr_index = 0;
     for (auto& n : pow10_nums) { // calculating points corresponding to the decomposition components
-        pow_key.SetInt64(n);     
-        pow10_points.push_back(secp256k1->ScalarMultiplication(&pow_key));
+        pow_key.SetInt64(n);
+        Pm = secp256k1->ScalarMultiplication(&pow_key);
+        pow10_points_Pos[arr_index] = Pm;
+        Pm.y.ModNeg();   
+        pow10_points_Neg[arr_index] = Pm;
+        arr_index += 1;
     }
     
     auto chrono_start = std::chrono::high_resolution_clock::now();
     
     auto key_search = [&]() {
-
-        int save_counter = 0; 
+ 
         string temp;
-        Point stride_point, calc_point;
-        Int stride_sum, stride;
+        Int stride_sum;
         ifstream inFile("stride_sum.txt");
         getline(inFile, temp);
         stride_sum.SetBase10(trim(temp).data());
         inFile.close();
-
-        stride.SetInt64(stride_bits);
-        stride_point = secp256k1->ScalarMultiplication(&stride);
         
-        Int two, int_Cores, range_Start, range_End, partition_Size, center_Num;
+        Int two, int_Cores, range_Start, range_End, partition_Size, center_Num, rem;
         two.SetInt32(2);
         int_Cores.SetInt32(cpuCores);
         range_Start.Set(&S_table[range_start]);
         range_End.Set(&S_table[range_end]);
-        partition_Size.floor_Div(&S_table[range_start], &int_Cores);
-        center_Num.floor_Div(&partition_Size, &two);
+        partition_Size.Set(&S_table[range_start]);
+        partition_Size.Div(&int_Cores, &rem);
+        center_Num.Set(&partition_Size);
+        center_Num.Div(&two, &rem);
 
-        vector<Int> range_Nums;
-        for (int i = 0; i <= cpuCores; i++) {
-            range_Nums.push_back(range_Start);
+        Int range_Nums[cpuCores + 1];
+        for (int i = 0; i < cpuCores + 1; i++) {
+            range_Nums[i] = range_Start;
             range_Start.Add(&partition_Size);
         }
-        range_Nums.push_back(range_End);
 
         Int center_Int;
-        vector<Int> center_Nums;
-        for (int i = 0; i <= cpuCores; i++) {
+        Int center_Nums[cpuCores];
+        for (int i = 0; i < cpuCores; i++) {
             center_Int.Add(&range_Nums[i], &center_Num);
-            center_Nums.push_back(center_Int);
+            center_Nums[i] = center_Int;
         }
         
         vector<Point> center_Points;
-        for (int i = 0; i <= cpuCores; i++) {
+        for (int i = 0; i < cpuCores; i++) {
             center_Points.push_back(secp256k1->ScalarMultiplication(&center_Nums[i]));
         }
-        
+
         vector<Point> sideway_Points;
-        for (int i = 0; i <= cpuCores + 1; i++) {
+        for (int i = 0; i < cpuCores + 1; i++) {
             sideway_Points.push_back(secp256k1->ScalarMultiplication(&range_Nums[i]));
         }
 
@@ -123,24 +129,19 @@ auto main() -> int {
         vector<Point> neg_Points;
         vector<Point> pos_PointsSw;
         vector<Point> neg_PointsSw;
-        if (stride_sum.IsZero()) {
-            for (int i = 0; i <= cpuCores; i++) {
-                pos_Points.push_back(center_Points[i]);
-                neg_Points.push_back(center_Points[i]);
-                pos_PointsSw.push_back(sideway_Points[i]);
-                neg_PointsSw.push_back(sideway_Points[i + 1]);
-            }
+
+        Point offset_PosPoint = secp256k1->ScalarMultiplication(&stride_sum);
+        Point offset_NegPoint = offset_PosPoint; offset_NegPoint.y.ModNeg();
+        
+        for (int i = 0; i < cpuCores; i++) {
+            pos_Points.push_back(secp256k1->AddPoints2(center_Points[i], offset_PosPoint));
+            neg_Points.push_back(secp256k1->AddPoints2(center_Points[i], offset_NegPoint));
+            pos_PointsSw.push_back(secp256k1->AddPoints2(sideway_Points[i], offset_PosPoint));
+            neg_PointsSw.push_back(secp256k1->AddPoints2(sideway_Points[i + 1], offset_NegPoint));
         }
-        else {
-            Point offset_PosPoint = secp256k1->ScalarMultiplication(&stride_sum);
-            Point offset_NegPoint = offset_PosPoint; offset_NegPoint.y.ModNeg();
-            for (int i = 0; i <= cpuCores; i++) {
-                pos_Points.push_back(secp256k1->AddPoints(center_Points[i], offset_PosPoint));
-                neg_Points.push_back(secp256k1->AddPoints(center_Points[i], offset_NegPoint));
-                pos_PointsSw.push_back(secp256k1->AddPoints(sideway_Points[i], offset_PosPoint));
-                neg_PointsSw.push_back(secp256k1->AddPoints(sideway_Points[i + 1], offset_NegPoint));
-            }
-        }
+
+        Int stride(stride_bits);
+        Point stride_point = secp256k1->ScalarMultiplication(&stride);
 
         Point addPointsPos[POINTS_BATCH_SIZE]; // array for batch addition points positive
         Point addPointsNeg[POINTS_BATCH_SIZE]; // array for batch addition points negative      
@@ -159,6 +160,7 @@ auto main() -> int {
         // center_key_search_save
         auto center_key_search_save = [&](Point posStartP, Point negStartP, Int center_Num, Int stride_Sum) {
 
+            int save_counter = 0;
             Int stride_sum; stride_sum.Set(&stride_Sum);
             Int center_num; center_num.Set(&center_Num);
             Int Int_steps, Int_temp, privkey;
@@ -182,7 +184,7 @@ auto main() -> int {
             
             Point startPointPos = posStartP; // start point positive
             Point startPointNeg = negStartP; // start point negative
-            Point BloomP, CheckP;
+            Point BloomP, CheckP, calc_point;
         
             Int batch_stride, batch_index;
             batch_stride.Mult(&stride, uint64_t(POINTS_BATCH_SIZE));
@@ -269,14 +271,14 @@ auto main() -> int {
                         
                             privkey_num.clear();
                             index = 0;
-                            for (auto& p : pow10_points) {
+                            for (size_t i = 0; i < arr_size; i++) {
                                 count = 0;
-                                while (bf.may_contain(BloomP.x.bits64[3])) {
-                                    BloomP = secp256k1->SubtractPoints(BloomP, p);
+                                do {
+                                    BloomP = secp256k1->AddPoints(BloomP, pow10_points_Neg[i]);
                                     count += 1;
-                                }
+                                } while (bf.may_contain(BloomP.x.bits64[3]));
                                 privkey_num.push_back(pow10_nums[index] * (count - 1));
-                                BloomP = secp256k1->AddPoints(BloomP, p);
+                                BloomP = secp256k1->AddPoints(BloomP, pow10_points_Pos[i]);
                                 index += 1;
                             }
                             
@@ -289,7 +291,8 @@ auto main() -> int {
                             privkey.Sub(&center_num, &Int_steps);
                             calc_point = secp256k1->ScalarMultiplication(&privkey);
                             
-                            if (secp256k1->GetPublicKeyHex(calc_point) == search_pub) {
+                            if (calc_point.x_equals(TargetP)) {
+                                //print_time(); cout << "Center_num save Pos" << endl;
                                 print_time(); cout << "Private key: " << privkey.GetBase10() << endl;
                                 ofstream outFile;
                                 outFile.open("found.txt", ios::app);
@@ -332,14 +335,14 @@ auto main() -> int {
                         
                             privkey_num.clear();
                             index = 0;
-                            for (auto& p : pow10_points) {
+                            for (size_t i = 0; i < arr_size; i++) {
                                 count = 0;
-                                while (bf.may_contain(BloomP.x.bits64[3])) {
-                                    BloomP = secp256k1->SubtractPoints(BloomP, p);
+                                do {
+                                    BloomP = secp256k1->AddPoints(BloomP, pow10_points_Neg[i]);
                                     count += 1;
-                                }
+                                } while (bf.may_contain(BloomP.x.bits64[3]));
                                 privkey_num.push_back(pow10_nums[index] * (count - 1));
-                                BloomP = secp256k1->AddPoints(BloomP, p);
+                                BloomP = secp256k1->AddPoints(BloomP, pow10_points_Pos[i]);
                                 index += 1;
                             }
                             
@@ -352,7 +355,8 @@ auto main() -> int {
                             privkey.Sub(&center_num, &Int_steps);
                             calc_point = secp256k1->ScalarMultiplication(&privkey);
                             
-                            if (secp256k1->GetPublicKeyHex(calc_point) == search_pub) {
+                            if (calc_point.x_equals(TargetP)) {
+                                //print_time(); cout << "Center_num save Neg" << endl;
                                 print_time(); cout << "Private key: " << privkey.GetBase10() << endl;
                                 ofstream outFile;
                                 outFile.open("found.txt", ios::app);
@@ -411,7 +415,7 @@ auto main() -> int {
             
             Point startPointPos = posStartP; // start point positive
             Point startPointNeg = negStartP; // start point negative
-            Point BloomP, CheckP;
+            Point BloomP, CheckP, calc_point;
         
             Int batch_stride, batch_index;
             batch_stride.Mult(&stride, uint64_t(POINTS_BATCH_SIZE));
@@ -498,14 +502,14 @@ auto main() -> int {
                         
                             privkey_num.clear();
                             index = 0;
-                            for (auto& p : pow10_points) {
+                            for (size_t i = 0; i < arr_size; i++) {
                                 count = 0;
-                                while (bf.may_contain(BloomP.x.bits64[3])) {
-                                    BloomP = secp256k1->SubtractPoints(BloomP, p);
+                                do {
+                                    BloomP = secp256k1->AddPoints(BloomP, pow10_points_Neg[i]);
                                     count += 1;
-                                }
+                                } while (bf.may_contain(BloomP.x.bits64[3]));
                                 privkey_num.push_back(pow10_nums[index] * (count - 1));
-                                BloomP = secp256k1->AddPoints(BloomP, p);
+                                BloomP = secp256k1->AddPoints(BloomP, pow10_points_Pos[i]);
                                 index += 1;
                             }
                             
@@ -518,7 +522,8 @@ auto main() -> int {
                             privkey.Sub(&center_num, &Int_steps);
                             calc_point = secp256k1->ScalarMultiplication(&privkey);
                             
-                            if (secp256k1->GetPublicKeyHex(calc_point) == search_pub) {
+                            if (calc_point.x_equals(TargetP)) {
+                                //print_time(); cout << "Center_num Pos" << endl;
                                 print_time(); cout << "Private key: " << privkey.GetBase10() << endl;
                                 ofstream outFile;
                                 outFile.open("found.txt", ios::app);
@@ -562,14 +567,14 @@ auto main() -> int {
                         
                             privkey_num.clear();
                             index = 0;
-                            for (auto& p : pow10_points) {
+                            for (size_t i = 0; i < arr_size; i++) {
                                 count = 0;
-                                while (bf.may_contain(BloomP.x.bits64[3])) {
-                                    BloomP = secp256k1->SubtractPoints(BloomP, p);
+                                do {
+                                    BloomP = secp256k1->AddPoints(BloomP, pow10_points_Neg[i]);
                                     count += 1;
-                                }
+                                } while (bf.may_contain(BloomP.x.bits64[3]));
                                 privkey_num.push_back(pow10_nums[index] * (count - 1));
-                                BloomP = secp256k1->AddPoints(BloomP, p);
+                                BloomP = secp256k1->AddPoints(BloomP, pow10_points_Pos[i]);
                                 index += 1;
                             }
                             
@@ -582,7 +587,8 @@ auto main() -> int {
                             privkey.Sub(&center_num, &Int_steps);
                             calc_point = secp256k1->ScalarMultiplication(&privkey);
                             
-                            if (secp256k1->GetPublicKeyHex(calc_point) == search_pub) {
+                            if (calc_point.x_equals(TargetP)) {
+                                //print_time(); cout << "Center_num Neg" << endl;
                                 print_time(); cout << "Private key: " << privkey.GetBase10() << endl;
                                 ofstream outFile;
                                 outFile.open("found.txt", ios::app);
@@ -632,7 +638,7 @@ auto main() -> int {
             
             Point startPointPos = posStartP; // start point positive
             Point startPointNeg = negStartP; // start point negative
-            Point BloomP, CheckP;
+            Point BloomP, CheckP, calc_point;
         
             Int batch_stride, batch_index;
             batch_stride.Mult(&stride, uint64_t(POINTS_BATCH_SIZE));
@@ -719,14 +725,14 @@ auto main() -> int {
                         
                             privkey_num.clear();
                             index = 0;
-                            for (auto& p : pow10_points) {
+                            for (size_t i = 0; i < arr_size; i++) {
                                 count = 0;
-                                while (bf.may_contain(BloomP.x.bits64[3])) {
-                                    BloomP = secp256k1->SubtractPoints(BloomP, p);
+                                do {
+                                    BloomP = secp256k1->AddPoints(BloomP, pow10_points_Neg[i]);
                                     count += 1;
-                                }
+                                } while (bf.may_contain(BloomP.x.bits64[3]));
                                 privkey_num.push_back(pow10_nums[index] * (count - 1));
-                                BloomP = secp256k1->AddPoints(BloomP, p);
+                                BloomP = secp256k1->AddPoints(BloomP, pow10_points_Pos[i]);
                                 index += 1;
                             }
                             
@@ -739,7 +745,8 @@ auto main() -> int {
                             privkey.Sub(&range_num_pos, &Int_steps);
                             calc_point = secp256k1->ScalarMultiplication(&privkey);
                             
-                            if (secp256k1->GetPublicKeyHex(calc_point) == search_pub) {
+                            if (calc_point.x_equals(TargetP)) {
+                                //print_time(); cout << "Sideway_Num Pos" << endl;
                                 print_time(); cout << "Private key: " << privkey.GetBase10() << endl;
                                 ofstream outFile;
                                 outFile.open("found.txt", ios::app);
@@ -781,14 +788,14 @@ auto main() -> int {
                         
                             privkey_num.clear();
                             index = 0;
-                            for (auto& p : pow10_points) {
+                            for (size_t i = 0; i < arr_size; i++) {
                                 count = 0;
-                                while (bf.may_contain(BloomP.x.bits64[3])) {
-                                    BloomP = secp256k1->SubtractPoints(BloomP, p);
+                                do {
+                                    BloomP = secp256k1->AddPoints(BloomP, pow10_points_Neg[i]);
                                     count += 1;
-                                }
+                                } while (bf.may_contain(BloomP.x.bits64[3]));
                                 privkey_num.push_back(pow10_nums[index] * (count - 1));
-                                BloomP = secp256k1->AddPoints(BloomP, p);
+                                BloomP = secp256k1->AddPoints(BloomP, pow10_points_Pos[i]);
                                 index += 1;
                             }
                             
@@ -801,7 +808,8 @@ auto main() -> int {
                             privkey.Sub(&range_num_neg, &Int_steps);
                             calc_point = secp256k1->ScalarMultiplication(&privkey);
                             
-                            if (secp256k1->GetPublicKeyHex(calc_point) == search_pub) {
+                            if (calc_point.x_equals(TargetP)) {
+                                //print_time(); cout << "Sideway_Num Neg" << endl;
                                 print_time(); cout << "Private key: " << privkey.GetBase10() << endl;
                                 ofstream outFile;
                                 outFile.open("found.txt", ios::app);

@@ -1,8 +1,6 @@
 #include "SECP256k1.h"
 #include <string.h>
 #include <cstdint>
-#include <iostream>
-#include <gmp.h>
 
 Secp256K1::Secp256K1() {
 }
@@ -73,17 +71,12 @@ Point Secp256K1::PointMultiplication(Point &P, Int *scalar) {
 }
 
 Point Secp256K1::PointDivision(Point &P, Int *scalar) {
-  Point A;
+  Point D;
   Int mod_inv;
-  mpz_t N, d, s;
-  mpz_inits(N, d, s, NULL);
-  mpz_set_str(N, order.GetBase10().c_str(), 0);
-  mpz_set_str(s, scalar->GetBase10().c_str(), 0);
-  mpz_invert(d, s, N);
-  mod_inv.SetBase10(mpz_get_str(NULL, 10, d));
-  mpz_clears(N, d, s, NULL);
-  A = PointMultiplication(P, &mod_inv);
-  return A;
+  mod_inv.Set(scalar);
+  mod_inv.MultInvModN();
+  D = PointMultiplication(P, &mod_inv);
+  return D;
 }
 
 uint8_t Secp256K1::GetByte(std::string &str, int idx) {
@@ -143,7 +136,7 @@ std::string Secp256K1::GetPublicKeyHex(Point &pubKey) {
   return ret;
 }
 
-std::string Secp256K1::GetXHex(Int* x, int length) {
+std::string Secp256K1::GetXHex(Int *x, int length) {
   unsigned char publicKeyBytes[33];
   char tmp[3];
   std::string ret;
@@ -161,6 +154,54 @@ Point Secp256K1::AddPoints(Point &p1,Point &p2) {
   Int _s, dx, dy;
   Point r;
   r.z.SetInt32(1);
+
+  dy.ModSub(&p2.y, &p1.y);
+  dx.ModSub(&p2.x, &p1.x);
+  dx.ModInv();
+  _s.ModMulK1(&dy, &dx);     // s = (p2.y-p1.y)*inverse(p2.x-p1.x);
+
+  r.x.ModSquareK1(&_s);       // _p = pow2(s)
+  r.x.ModSub(&p1.x);
+  r.x.ModSub(&p2.x);       // rx = pow2(s) - p1.x - p2.x;
+
+  r.y.ModSub(&p2.x, &r.x);
+  r.y.ModMulK1(&_s);
+  r.y.ModSub(&p2.y);       // ry = - p2.y - s*(ret.x-p2.x);
+
+  return r;
+
+}
+
+Point Secp256K1::AddPoints2(Point &p1, Point &p2) {
+
+  Int _s, dx, dy;
+  Point r;
+  r.z.SetInt32(1);
+  Int _ZERO((uint64_t)0);
+  /*
+  if (p1.equals2(p2)) {
+      r = DoublePoint(p1);
+      return r;
+  }
+  */
+  if (p1.x.IsEqual(&p2.x)) {
+      r.x.SetInt32(0);
+      r.y.SetInt32(0);
+      return r;
+  }
+  
+  if (p1.x.IsEqual(&_ZERO)) {
+      r.x.Set(&p2.x);
+      r.y.Set(&p2.y);
+      return r;
+  }
+  
+  if (p2.x.IsEqual(&_ZERO)) {
+      r.x.Set(&p1.x);
+      r.y.Set(&p1.y);
+      return r;
+  }
+
 
   dy.ModSub(&p2.y, &p1.y);
   dx.ModSub(&p2.x, &p1.x);
@@ -392,6 +433,20 @@ Point Secp256K1::SubtractPoints(Point &p1, Point &p2) {
   Q1.y.ModNeg();
   Q1.z.SetInt32(1);
   Q2 = AddPoints(p1, Q1);
+  return Q2;
+}
+
+Point Secp256K1::SubtractPoints2(Point &p1, Point &p2) {
+  Point Q1, Q2;
+  if (p1.equals2(p2)) {
+      Q2.x.SetInt32(0);
+      Q2.y.SetInt32(0);
+      return Q2;
+  }
+  Q1.Set(p2);
+  Q1.y.ModNeg();
+  Q1.z.SetInt32(1);
+  Q2 = AddPoints2(p1, Q1);
   return Q2;
 }
 

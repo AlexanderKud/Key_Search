@@ -3,7 +3,6 @@
 
 #include <string>
 #include <inttypes.h>
-#include <gmp.h>
 
 // We need 1 extra block for Knuth div algorithm , Montgomery multiplication and ModInv
 #define BISIZE 256
@@ -27,8 +26,11 @@ public:
   Int(uint64_t u64);
   Int(Int *a);
 
+  // Multiplicative Inverse Mod N (Group Order)
+  void MultInvModN();
+
   // Op
-  void floor_Div(Int *a, Int *b);
+  //void floor_Div(Int *a, Int *b);
   void Add(uint64_t a);
   void Add(Int *a);
   void Add(Int *a, Int *b);
@@ -40,7 +42,7 @@ public:
   void Mult(Int *a);
   void Mult(uint64_t a);
   void IMult(int64_t a);
-  void Mult(Int *a,uint64_t b);
+  void Mult(Int *a, uint64_t b);
   void IMult(Int *a, int64_t b);
   void Mult(Int *a, Int *b);
   void IMultAdd(Int* a, int64_t aa, Int* b, int64_t bb);

@@ -22,7 +22,7 @@ extern Int _ONE;
 void Int::ModAdd(Int *a) {
   Int p;
   Add(a);
-  p.Sub(this, &Field_P);
+  p.Sub(this,&Field_P);
   if(p.IsPositive())
     Set(&p);
 }
@@ -32,7 +32,7 @@ void Int::ModAdd(Int *a) {
 void Int::ModAdd(Int *a, Int *b) {
   Int p;
   Add(a,b);
-  p.Sub(this, &Field_P);
+  p.Sub(this,&Field_P);
   if(p.IsPositive())
     Set(&p);
 }
@@ -42,7 +42,7 @@ void Int::ModAdd(Int *a, Int *b) {
 void Int::ModDouble() {
   Int p;
   Add(this);
-  p.Sub(this, &Field_P);
+  p.Sub(this,&Field_P);
   if(p.IsPositive())
     Set(&p);
 }
@@ -52,7 +52,7 @@ void Int::ModDouble() {
 void Int::ModAdd(uint64_t a) {
   Int p;
   Add(a);
-  p.Sub(this, &Field_P);
+  p.Sub(this,&Field_P);
   if(p.IsPositive())
     Set(&p);
 }
@@ -893,7 +893,7 @@ void Int::MontgomeryMult(Int *a, Int *b) {
 // SecpK1 specific section -----------------------------------------------------------------------------
 
 void Int::ModMulK1(Int *a, Int *b) {
-/*
+
 #ifndef WIN64
 #if (__GNUC__ > 7) || (__GNUC__ == 7 && (__GNUC_MINOR__ > 2))
   unsigned char c;
@@ -904,8 +904,7 @@ void Int::ModMulK1(Int *a, Int *b) {
 #else
   unsigned char c;
 #endif
-*/
-  unsigned char c;
+
 
   uint64_t ah, al;
   uint64_t t[5];
@@ -956,7 +955,7 @@ void Int::ModMulK1(Int *a, Int *b) {
 }
 
 void Int::ModMulK1(Int *a) {
-/*
+
 #ifndef WIN64
 #if (__GNUC__ > 7) || (__GNUC__ == 7 && (__GNUC_MINOR__ > 2))
   unsigned char c;
@@ -967,8 +966,6 @@ void Int::ModMulK1(Int *a) {
 #else
   unsigned char c;
 #endif
-*/
-  unsigned char c;
 
   uint64_t ah, al;
   uint64_t t[5];
@@ -1018,7 +1015,7 @@ void Int::ModMulK1(Int *a) {
 }
 
 void Int::ModSquareK1(Int *a) {
-/*
+
 #ifndef WIN64
 #if (__GNUC__ > 7) || (__GNUC__ == 7 && (__GNUC_MINOR__ > 2))
   unsigned char c;
@@ -1029,8 +1026,6 @@ void Int::ModSquareK1(Int *a) {
 #else
   unsigned char c;
 #endif
-*/
-  unsigned char c;
 
   uint64_t r512[8];
   uint64_t u10, u11;
