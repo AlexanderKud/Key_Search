@@ -7,6 +7,6 @@ default:
 	g++ -O2 -march=native -c util/util.cpp -o util.o
 	g++ -O2 -march=native -Wno-write-strings -c prep_bloom.cpp
 	g++ -O2 -march=native -Wno-write-strings -c key_search.cpp
-	g++ -o prep_bloom prep_bloom.o util.o SECP256K1.o Int.o IntGroup.o IntMod.o Point.o -lgmp -fopenmp
-	g++ -o key_search key_search.o util.o SECP256K1.o Int.o IntGroup.o IntMod.o Point.o -lgmp
+	g++ -o prep_bloom prep_bloom.o util.o SECP256K1.o Int.o IntGroup.o IntMod.o Point.o -fopenmp
+	g++ -o key_search key_search.o util.o SECP256K1.o Int.o IntGroup.o IntMod.o Point.o
 	rm *.o
