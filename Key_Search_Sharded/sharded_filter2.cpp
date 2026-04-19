@@ -17,12 +17,6 @@ using namespace std;
 
 const int POINTS_BATCH_SIZE = 1024; // Batch addition with batch inversion using IntGroup class
 
-void unique_sort(std::vector<uint64_t>& vec) {
-    std::sort(vec.begin(), vec.end());
-    auto last = std::unique(vec.begin(), vec.end());
-    vec.erase(last, vec.end());
-}
-
 int ready_flag = 1;
 int vec_clear_flag = 1;
 const int shard_bits = 4;
