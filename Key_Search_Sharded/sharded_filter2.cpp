@@ -7,9 +7,6 @@
 #include <vector>
 #include <thread>
 #include <algorithm>
-#include <span>
-#include <atomic>
-
 
 #include "secp256k1/SECP256k1.h"
 #include "secp256k1/Int.h"
