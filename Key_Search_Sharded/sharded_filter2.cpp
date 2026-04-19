@@ -7,6 +7,9 @@
 #include <vector>
 #include <thread>
 #include <algorithm>
+#include <span>
+#include <atomic>
+
 
 #include "secp256k1/SECP256k1.h"
 #include "secp256k1/Int.h"
@@ -21,6 +24,30 @@ void unique_sort(std::vector<uint64_t>& vec) {
     std::sort(vec.begin(), vec.end());
     auto last = std::unique(vec.begin(), vec.end());
     vec.erase(last, vec.end());
+}
+
+int ready_flag = 1;
+int vec_clear_flag = 1;
+const int shard_bits = 4;
+const int shards_count = 1 << shard_bits;
+
+void process_shard(std::vector<uint64_t>& shard_nums, binfuse::sharded_filter16_sink &sink, int loop_id) {
+
+    ::ready_flag = 0;
+
+    binfuse::filter16 shard_fil(shard_nums);
+
+    ::vec_clear_flag = 0;
+
+    shard_nums.clear();
+
+    ::vec_clear_flag = 1;
+            
+    print_time(); cout << "Shard " << (loop_id + 1) << '/' << shards_count << '\n';
+
+    sink.add_shard(shard_fil, loop_id);
+
+    ::ready_flag = 1;
 }
 
 auto main() -> int {
@@ -52,9 +79,6 @@ auto main() -> int {
     print_time(); cout << "Stride_sum written to file" << endl;
 
     Point target_point = secp256k1->ParsePublicKeyHex(search_pub);
-
-    int shard_bits = 4;
-    int shards_count = pow(2, shard_bits);
  
     uint64_t n_elements = pow(2, block_width);  // number of elements == 2^block_width
     uint64_t keysPerThread = n_elements / shards_count; // elements per thread
@@ -73,10 +97,9 @@ auto main() -> int {
     
     int nbBatch = keysPerThread / POINTS_BATCH_SIZE; // number of batches for the single thread
 
-    vector<uint64_t> shard_nums;
-    vector<uint64_t> vec[shards_count];
-
     binfuse::sharded_filter16_sink sink("sharded_filter.bin", shard_bits);
+
+    vector<uint64_t> shard_nums;
     
     auto binary_fuse_filter = [&]() {
 
@@ -88,6 +111,8 @@ auto main() -> int {
                 starting_points[i] = P;
                 P = secp256k1->AddPoints(P, Add_Point);
             }
+
+            vector<uint64_t> vec[shards_count];
 
             auto process_chunk = [&](Point start_point, int threadId) { // function for a thread
                 
@@ -151,25 +176,24 @@ auto main() -> int {
                 myThreads[i].join(); // waiting for threads to finish
             }
 
-            //unique_sort(shard_nums);
+            do {} while(!vec_clear_flag);
+
             for (int i = 0; i < shards_count; i++) {
                 shard_nums.insert(shard_nums.end(), vec[i].begin(), vec[i].end());
             }
 
-            binfuse::filter16 shard_fil(shard_nums);
+            do {} while(!ready_flag);
             
-            print_time(); cout << "Shard " << (loop_id + 1) << '/' << shards_count << '\n';
-
-            sink.add_shard(shard_fil, loop_id);
-
-            for (int i = 0; i < shards_count; i++) {
-                vec[i].clear();
+            std::thread shard_thread(process_shard, std::ref(shard_nums), std::ref(sink), loop_id);
+            if((shards_count - loop_id) != 1) {
+                shard_thread.detach();
+            }
+            else {
+                shard_thread.join();
             }
 
-            shard_nums.clear();
         }       
     };
-
 
     std::thread binary_fuse_filter_thread(binary_fuse_filter);
     

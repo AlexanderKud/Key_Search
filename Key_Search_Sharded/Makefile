@@ -7,6 +7,8 @@ default:
 	g++ -O2 -march=native -c util/util.cpp -o util.o
 	g++ -std=c++20 -O2 -march=native -Wno-write-strings -c key_search_sharded.cpp
 	g++ -std=c++20 -O2 -march=native -Wno-write-strings -c sharded_filter.cpp
+	g++ -std=c++20 -O2 -march=native -Wno-write-strings -c sharded_filter2.cpp
 	g++ -o sharded_filter sharded_filter.o util.o SECP256K1.o Int.o IntGroup.o IntMod.o Point.o
+	g++ -o sharded_filter2 sharded_filter2.o util.o SECP256K1.o Int.o IntGroup.o IntMod.o Point.o
 	g++ -o key_search_sharded key_search_sharded.o util.o SECP256K1.o Int.o IntGroup.o IntMod.o Point.o
 	rm *.o
